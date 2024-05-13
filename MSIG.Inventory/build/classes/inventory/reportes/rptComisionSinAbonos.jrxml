@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="null" pageWidth="595" pageHeight="842" columnWidth="535" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="f6e94013-a27c-4893-9423-5e9fe0a35dfc">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<style name="Title" fontName="Times New Roman" fontSize="50" isBold="true" pdfFontName="Times-Bold"/>
+	<style name="SubTitle" forecolor="#736343" fontName="Arial" fontSize="18"/>
+	<style name="Column header" forecolor="#666666" fontName="Arial" fontSize="12" isBold="true"/>
+	<style name="Detail" fontName="Arial" fontSize="12"/>
+	<style name="Row" mode="Transparent">
+		<conditionalStyle>
+			<conditionExpression><![CDATA[$V{REPORT_COUNT}%2 == 0]]></conditionExpression>
+			<style backcolor="#E6DAC3"/>
+		</conditionalStyle>
+	</style>
+	<parameter name="P_FECHA_INICIAL" class="java.lang.String">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="P_FECHA_FINAL" class="java.lang.String">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="P_ID_EMPLEADO" class="java.lang.Integer">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[-- Para saber la comision total de un empleado en el mes, solo de las facturas, sin contar los abonos
+select comisiones.nombre_empleado, 
+       sum(comisiones.total_comision_factura) as comision_factura,
+       sum(comisiones.total_comision_abono) as comision_abono
+from (select   a.nombre_empleado,
+         sum(b.comision_factura) as total_comision_factura,
+         0 as total_comision_abono
+ from    m_empleado a,
+         m_factura b
+ where   b.estado_factura = 'Cancelado'
+ and     a.id_empleado = b.id_empleado
+ and     str_to_date(date_format(b.fecha_emision_factura, '%Y-%m-%d'), '%Y-%m-%d') between str_to_date($P{P_FECHA_INICIAL}, '%Y-%m-%d') and str_to_date($P{P_FECHA_FINAL}, '%Y-%m-%d')
+ group by a.nombre_empleado
+ union all
+select a.nombre_empleado,
+       0 as total_comision_factura,
+       sum(c.comision_sobre_abono) as total_comision_abono 
+from   m_empleado a,
+       m_factura b,
+       m_abono c
+where  b.estado_factura = 'Cancelado'
+and    a.id_empleado = b.id_empleado
+and    b.id_factura = c.id_factura
+and    str_to_date(date_format(c.fecha_abono, '%Y-%m-%d'), '%Y-%m-%d') between str_to_date($P{P_FECHA_INICIAL}, '%Y-%m-%d') and str_to_date($P{P_FECHA_FINAL}, '%Y-%m-%d')
+group by a.nombre_empleado) as comisiones
+group by comisiones.nombre_empleado]]>
+	</queryString>
+	<field name="nombre_empleado" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="comision_factura" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="comision_abono" class="java.math.BigDecimal"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="60" splitType="Stretch">
+			<staticText>
+				<reportElement uuid="e88344e4-c520-404e-b58f-bc79cb8d0cc2" style="Title" x="113" y="0" width="298" height="18"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="14" pdfFontName="Times-Roman"/>
+				</textElement>
+				<text><![CDATA[COMISIONES SIN ABONOS]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="91a8915f-d49f-4191-af0e-f7fb7f7aa758" style="SubTitle" x="0" y="44" width="61" height="10"/>
+				<textElement textAlignment="Center">
+					<font fontName="Times New Roman" size="8" pdfFontName="Times-Roman"/>
+				</textElement>
+				<text><![CDATA[Inventory V.3.0]]></text>
+			</staticText>
+			<image>
+				<reportElement uuid="e199643d-f33b-4c8b-9165-4865e43621bd" x="0" y="0" width="61" height="44"/>
+				<imageExpression><![CDATA[this.getClass().getResource("/inventory/reportes/logotipo.jpg")]]></imageExpression>
+			</image>
+			<image>
+				<reportElement uuid="e199643d-f33b-4c8b-9165-4865e43621bd" x="436" y="0" width="119" height="44"/>
+				<imageExpression><![CDATA["C:\\MSIG Inventory MADERA\\logo_empresa.png"]]></imageExpression>
+			</image>
+		</band>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band height="21" splitType="Stretch">
+			<line>
+				<reportElement uuid="307aa929-4f63-40b8-a6be-73211bfa0836" positionType="FixRelativeToBottom" x="0" y="17" width="555" height="1"/>
+				<graphicElement>
+					<pen lineWidth="2.0" lineColor="#999999"/>
+				</graphicElement>
+			</line>
+			<staticText>
+				<reportElement uuid="25f4731f-c11f-4509-af55-2dadd9af89d5" style="Column header" x="0" y="0" width="265" height="15" forecolor="#736343"/>
+				<textElement/>
+				<text><![CDATA[Empleado]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="cc3aee73-adbf-41f2-93ad-c5c9987c89a6" style="Column header" x="289" y="0" width="132" height="15" forecolor="#736343"/>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[Comision Factura]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="6b8d1e8e-c510-49c4-96d0-8ee2e3b68b02" style="Column header" x="432" y="0" width="123" height="15" forecolor="#736343"/>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[Comision Abono]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="15" splitType="Stretch">
+			<frame>
+				<reportElement uuid="035393e8-94ec-4f17-bf44-f4525fcb1620" style="Row" mode="Opaque" x="0" y="0" width="555" height="15"/>
+				<textField isStretchWithOverflow="true">
+					<reportElement uuid="0347ffbe-b99c-4fde-bcc0-ce798822201e" style="Detail" x="0" y="0" width="265" height="15"/>
+					<textElement/>
+					<textFieldExpression><![CDATA[$F{nombre_empleado}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement uuid="f8ae5758-a70d-4035-94be-84ef31dc61a3" style="Detail" x="289" y="0" width="132" height="15"/>
+					<textElement textAlignment="Right"/>
+					<textFieldExpression><![CDATA[$F{comision_factura}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement uuid="bc62fb5b-02ac-4c5f-9528-5ed9d6a21117" style="Detail" x="432" y="0" width="123" height="15"/>
+					<textElement textAlignment="Right"/>
+					<textFieldExpression><![CDATA[$F{comision_abono}]]></textFieldExpression>
+				</textField>
+			</frame>
+		</band>
+	</detail>
+	<columnFooter>
+		<band height="10" splitType="Stretch">
+			<line>
+				<reportElement uuid="76b78642-7d30-455c-b637-74c801aeb2f0" positionType="FixRelativeToBottom" x="0" y="4" width="555" height="1"/>
+				<graphicElement>
+					<pen lineWidth="2.0" lineColor="#999999"/>
+				</graphicElement>
+			</line>
+		</band>
+	</columnFooter>
+	<pageFooter>
+		<band height="25" splitType="Stretch">
+			<frame>
+				<reportElement uuid="092c0ebc-838a-4212-bfb7-7ca31d53dc35" mode="Opaque" x="-21" y="1" width="597" height="24" forecolor="#FFFFFF" backcolor="#FFFFFF"/>
+				<textField evaluationTime="Report">
+					<reportElement uuid="cbe943e0-1722-402e-83b2-34f87bc4ca85" style="Column header" x="533" y="0" width="40" height="20" forecolor="#736343"/>
+					<textElement verticalAlignment="Middle">
+						<font size="10" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[" " + $V{PAGE_NUMBER}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement uuid="895ae46a-fec2-47ad-bdba-6337d9138a5e" style="Column header" x="453" y="0" width="80" height="20" forecolor="#736343"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="10" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Page "+$V{PAGE_NUMBER}+" of"]]></textFieldExpression>
+				</textField>
+				<textField pattern="EEEEE dd MMMMM yyyy">
+					<reportElement uuid="d122d5bb-7e46-4122-845a-9271ff6a57b9" style="Column header" x="22" y="1" width="197" height="20" forecolor="#736343"/>
+					<textElement verticalAlignment="Middle">
+						<font size="10" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+				</textField>
+			</frame>
+		</band>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>
